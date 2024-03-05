@@ -16,6 +16,18 @@
 #define BUTTON_HEIGHT 50
 #define BUTTON_MARGIN 35
 
+typedef struct {
+    int value;
+} Element;
+
+
+typedef struct {
+    Element *elements;
+    int size;
+    int capacity;
+
+} Container;
+
 int main(int argc, char* argv[]) {
 
     SDL_Init(SDL_INIT_VIDEO);
