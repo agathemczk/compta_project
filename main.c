@@ -43,6 +43,7 @@ int main(int argc, char* argv[]) {
     SDL_Rect boxes[6];
     SDL_Color colors[6] = {{160, 93, 201, 255}, {233, 131, 65, 255}, {68, 201, 110, 255}, {218, 217, 67, 255}, {237, 116, 213, 255}, {82, 113, 201, 255}};
     SDL_Color gray = {192, 192, 192, 255};
+    SDL_Color darkGray = {128, 128, 128, 255};
     SDL_Color white = {255, 255, 255, 255};
 
     for(int i = 0; i < 6; i++) {
@@ -75,8 +76,14 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        SDL_SetRenderDrawColor(renderer, gray.r, gray.g, gray.b, gray.a);
+        int x, y;
+        SDL_GetMouseState(&x, &y);
+        bool isBuyHovered = x >= buyButton.x && x <= buyButton.x + buyButton.w && y >= buyButton.y && y <= buyButton.y + buyButton.h;
+        bool isSellHovered = x >= sellButton.x && x <= sellButton.x + sellButton.w && y >= sellButton.y && y <= sellButton.y + sellButton.h;
+
+        SDL_SetRenderDrawColor(renderer, isBuyHovered ? darkGray.r : gray.r, isBuyHovered ? darkGray.g : gray.g, isBuyHovered ? darkGray.b : gray.b, isBuyHovered ? darkGray.a : gray.a);
         SDL_RenderFillRect(renderer, &buyButton);
+        SDL_SetRenderDrawColor(renderer, isSellHovered ? darkGray.r : gray.r, isSellHovered ? darkGray.g : gray.g, isSellHovered ? darkGray.b : gray.b, isSellHovered ? darkGray.a : gray.a);
         SDL_RenderFillRect(renderer, &sellButton);
 
         SDL_Surface* buySurface = TTF_RenderText_Solid(font, "BUY", white);
