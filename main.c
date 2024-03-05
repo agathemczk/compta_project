@@ -25,7 +25,6 @@ typedef struct {
     Element *elements;
     int size;
     int capacity;
-
 } Container;
 
 int main(int argc, char* argv[]) {
