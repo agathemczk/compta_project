@@ -16,16 +16,17 @@
 #define BUTTON_HEIGHT 50
 #define BUTTON_MARGIN 35
 
-typedef struct {
-    int value;
-} Element;
+//structure d'un objet
+typedef struct object {
+    struct object* next;
+} object;
 
-
-typedef struct {
-    Element *elements;
-    int size;
-    int capacity;
-} Container;
+//structure d'une boîte, avec son numéro et le count d'objets qu'elle contient
+typedef struct box {
+    int number_of_the_box;
+    int count_of_objects;
+    object* firstobject;
+} box;
 
 int main(int argc, char* argv[]) {
 
