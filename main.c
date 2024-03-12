@@ -43,6 +43,16 @@ void render_button(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL
     SDL_DestroyTexture(texture);
 }
 
+void render_boxes(SDL_Renderer* renderer, SDL_Rect* boxes, SDL_Color* colors, int border_thickness) {
+    for(int i = 0; i < 6; i++) {
+        SDL_SetRenderDrawColor(renderer, colors[i].r, colors[i].g, colors[i].b, colors[i].a);
+        for(int j = 0; j < border_thickness; j++) {
+            SDL_Rect border = {boxes[i].x - j, boxes[i].y - j, boxes[i].w + 2*j, boxes[i].h + 2*j};
+            SDL_RenderDrawRect(renderer, &border);
+        }
+    }
+}
+
 //structure d'un objet
 typedef struct object {
     struct object* next;
@@ -135,18 +145,7 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
 
-        for(int i = 0; i < 6; i++) {
-            SDL_SetRenderDrawColor(renderer, colors[i].r, colors[i].g, colors[i].b, colors[i].a);
-            for(int j = 0; j < BORDER_THICKNESS; j++) {
-                SDL_Rect border = {boxes[i].x - j, boxes[i].y - j, boxes[i].w + 2*j, boxes[i].h + 2*j};
-                SDL_RenderDrawRect(renderer, &border);
-            }
-        }
-
-        int x, y;
-        SDL_GetMouseState(&x, &y);
-        bool isBuyHovered = x >= buyButton.x && x <= buyButton.x + buyButton.w && y >= buyButton.y && y <= buyButton.y + buyButton.h;
-        bool isSellHovered = x >= sellButton.x && x <= sellButton.x + sellButton.w && y >= sellButton.y && y <= sellButton.y + sellButton.h;
+        render_boxes(renderer, boxes, colors, BORDER_THICKNESS);
 
         render_button(renderer, font, "BUY", buyButton, isBuyHovered ? darkGray : gray);
         render_button(renderer, font, "SELL", sellButton, isSellHovered ? darkGray : gray);
