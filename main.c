@@ -28,6 +28,24 @@ typedef struct box {
     object* firstobject;
 } box;
 
+//Pour ajouter des objets à une boîte
+void add_object (box* box) {
+    object* new_object = (object*)malloc(sizeof(object));
+    new_object->next = box->firstobject;
+    box->firstobject = new_object;
+    box->count_of_objects++;
+}
+
+//Pour supprimer des objets d'une boîte
+void delete_object (box* box) {
+    if (box->firstobject != NULL) {
+        object* next_object = box->firstobject->next;
+        free(box->firstobject);
+        box->firstobject = next_object;
+        box->count_of_objects--;
+    }
+}
+
 int main(int argc, char* argv[]) {
 
     SDL_Init(SDL_INIT_VIDEO);
