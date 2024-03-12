@@ -52,6 +52,14 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    //Créer les boîtes
+    for(int i = 0; i < 6; i++) {
+        box box_i;
+        box_i.number_of_the_box = i;
+        box_i.count_of_objects = 0;
+        box_i.firstobject = NULL;
+    }
+
     SDL_Rect boxes[6];
     SDL_Color colors[6] = {{160, 93, 201, 255}, {233, 131, 65, 255}, {68, 201, 110, 255}, {218, 217, 67, 255}, {237, 116, 213, 255}, {82, 113, 201, 255}};
     SDL_Color gray = {192, 192, 192, 255};
