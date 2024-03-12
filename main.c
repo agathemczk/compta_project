@@ -1,5 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 #include <stdbool.h>
 #include <time.h>
 #include <SDL2/SDL.h>
@@ -15,6 +20,7 @@
 #define BUTTON_WIDTH 150
 #define BUTTON_HEIGHT 50
 #define BUTTON_MARGIN 35
+<<<<<<< Updated upstream
 
 //structure d'un objet
 typedef struct object {
@@ -46,6 +52,60 @@ void delete_object (box* box) {
     }
 }
 
+=======
+>>>>>>> e914cbc709f7c60b1f4815aaa68521c44465a662
+
+typedef struct {
+    int value;
+} Element;
+
+
+typedef struct {
+    Element *elements;
+    int size;
+    int capacity;
+<<<<<<< HEAD
+
+} Container;
+
+void buyProduct(Container *container, int quantity) {
+    //voir si le conteneur a de place pr stocker nvll quantité
+    if (container->size + quantity > container->capacity) {
+        // Si le conteneur n'a pas assez d'espace
+        container->capacity += quantity;
+        container->elements = (Element *) realloc(container->elements, container->capacity * sizeof(Element));
+        if (container->elements == NULL) {
+            perror("Failed to reallocate memory for elements");
+            exit(EXIT_FAILURE);
+        }
+        // Ajoute la quantité spécifiée au conteneur
+        for (int i = 0; i < quantity; i++) {
+            container->elements[container->size + i].value = 1; //  ajuster(taillr) selon nos besoins
+        }
+        container->size += quantity;
+    }
+}
+void sellProduct(Container *container, int quantity) {
+    // Vérifie si le conteneur a suffisamment d'éléments pour effectuer la vente
+    if (container->size >= quantity) {
+        container->size -= quantity;
+    } else {
+        // Gérer dans le cas où c'est insufissant élements à vendre
+        printf("Not enough elements to sell %d units.\n", quantity);
+    }
+}
+
+int main(){
+
+
+    return 0;
+}
+
+
+=======
+} Container;
+
+>>>>>>> Stashed changes
 int main(int argc, char* argv[]) {
 
     SDL_Init(SDL_INIT_VIDEO);
@@ -70,6 +130,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+<<<<<<< Updated upstream
     //Créer les boîtes
     for(int i = 0; i < 6; i++) {
         box box_i;
@@ -78,6 +139,8 @@ int main(int argc, char* argv[]) {
         box_i.firstobject = NULL;
     }
 
+=======
+>>>>>>> Stashed changes
     SDL_Rect boxes[6];
     SDL_Color colors[6] = {{160, 93, 201, 255}, {233, 131, 65, 255}, {68, 201, 110, 255}, {218, 217, 67, 255}, {237, 116, 213, 255}, {82, 113, 201, 255}};
     SDL_Color gray = {192, 192, 192, 255};
@@ -154,3 +217,7 @@ int main(int argc, char* argv[]) {
     SDL_Quit();
     return 0;
 }
+<<<<<<< Updated upstream
+=======
+>>>>>>> e914cbc709f7c60b1f4815aaa68521c44465a662
+>>>>>>> Stashed changes
