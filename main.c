@@ -131,6 +131,13 @@ void sellProduct(Container *container, int quantity) {
         printf("Not enough elements to sell %d units.\n", quantity);
     }
 }
+//fonction pour  liberer memoire louer
+void freeContainer(Container *container) {
+    free(container->elements);
+    container->size = 0;
+    container->capacity = 0;
+}
+
 
 int main(){
 
