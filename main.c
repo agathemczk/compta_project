@@ -101,17 +101,31 @@ void delete_object (box* box) {
     }
 }
 
-// Dessine un carré rouge dans une boîte si elle contient un objet
+// Dessine un carré rouge dans une boîte pour chaque objet
 void render_objects_in_boxes(SDL_Renderer* renderer, box* boxes, SDL_Rect* box_rects) {
     SDL_Color red = {255, 0, 0, 255};
+    int object_size = 25; // Taille des carrés rouges
+    int margin = 10; // Espace entre les carrés rouges
     for(int i = 0; i < 6; i++) {
-        if (boxes[i].firstobject != NULL) {
-            SDL_Rect object_rect = {box_rects[i].x + box_rects[i].w / 4, box_rects[i].y + box_rects[i].h / 4, box_rects[i].w / 2, box_rects[i].h / 2};
+        object* current_object = boxes[i].firstobject;
+        int j = 0;
+        while (current_object != NULL) {
+            int column = j % 4; // Numéro de colonne (0 à 3)
+            int row = j / 4; // Numéro de ligne (0 à 4)
+            SDL_Rect object_rect = {
+                    box_rects[i].x + margin + column * (object_size + margin),
+                    box_rects[i].y + margin + row * (object_size + margin),
+                    object_size,
+                    object_size
+            };
             SDL_SetRenderDrawColor(renderer, red.r, red.g, red.b, red.a);
             SDL_RenderFillRect(renderer, &object_rect);
+            current_object = current_object->next;
+            j++;
         }
     }
 }
+
 
 int main(int argc, char* argv[]) {
 
@@ -164,6 +178,18 @@ int main(int argc, char* argv[]) {
 
     SDL_Rect buyButton = {WINDOW_WIDTH / 2 - BUTTON_WIDTH - BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
     SDL_Rect sellButton = {WINDOW_WIDTH / 2 + BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
+
+    //test test
+    add_object(&boxes[2]);
+    add_object(&boxes[2]);
+    add_object(&boxes[2]);
+    add_object(&boxes[2]);
+
+    delete_object(&boxes[2]);
+
+    delete_object(&boxes[1]);
+    add_object(&boxes[1]);
+
 
     bool running = true;
     while (running) {
