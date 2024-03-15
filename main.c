@@ -123,6 +123,7 @@ void render_objects_in_boxes(SDL_Renderer* renderer, box* boxes, SDL_Rect* box_r
     for(int i = 0; i < 6; i++) {
         object* current_object = boxes[i].firstobject;
         int j = 0;
+        int count = 0; // Compte le nombre d'objets qui peuvent être dessinés dans la boîte
         while (current_object != NULL) {
             int column = j % ((BOX_WIDTH - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS)); // Numéro de colonne
             int row = j / ((BOX_WIDTH - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS)); // Numéro de ligne
@@ -136,12 +137,15 @@ void render_objects_in_boxes(SDL_Renderer* renderer, box* boxes, SDL_Rect* box_r
                 // L'objet ne dépasse pas de la boîte
                 SDL_SetRenderDrawColor(renderer, red.r, red.g, red.b, red.a);
                 SDL_RenderFillRect(renderer, &object_rect);
+                count++; // Incrémente le compteur
             }
             current_object = current_object->next;
             j++;
         }
+        boxes[i].count_of_objects = count; // Met à jour le compteur d'objets de la boîte
     }
 }
+
 
 
 
@@ -198,7 +202,7 @@ int main(int argc, char* argv[]) {
     SDL_Rect sellButton = {WINDOW_WIDTH / 2 + BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
 
     //test test
-    for (int i = 0; i < 26; ++i) {
+    for (int i = 0; i < 25; ++i) {
         add_object(&boxes[2]);
     }
 
@@ -206,8 +210,6 @@ int main(int argc, char* argv[]) {
     add_object(&boxes[1]);
 
     printf("%d\n", boxes[2].count_of_objects);
-    delete_object(&boxes[2]);
-    delete_object(&boxes[2]);
     delete_object(&boxes[2]);
     delete_object(&boxes[2]);
     printf("%d\n", boxes[2].count_of_objects);
