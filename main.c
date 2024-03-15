@@ -102,9 +102,17 @@ bool add_object (box* box) {
 //Pour supprimer des objets d'une boîte
 void delete_object (box* box) {
     if (box->firstobject != NULL) {
-        object* next_object = box->firstobject->next;
-        free(box->firstobject);
-        box->firstobject = next_object;
+        if (box->firstobject->next == NULL) {
+            free(box->firstobject);
+            box->firstobject = NULL;
+        } else {
+            object* current_object = box->firstobject;
+            while (current_object->next->next != NULL) {
+                current_object = current_object->next;
+            }
+            free(current_object->next);
+            current_object->next = NULL;
+        }
         box->count_of_objects--;
     }
 }
@@ -134,6 +142,7 @@ void render_objects_in_boxes(SDL_Renderer* renderer, box* boxes, SDL_Rect* box_r
         }
     }
 }
+
 
 
 int main(int argc, char* argv[]) {
@@ -189,14 +198,19 @@ int main(int argc, char* argv[]) {
     SDL_Rect sellButton = {WINDOW_WIDTH / 2 + BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
 
     //test test
-    for (int i = 0; i < 30; ++i) {
+    for (int i = 0; i < 26; ++i) {
         add_object(&boxes[2]);
     }
 
-    delete_object(&boxes[2]);
-
     delete_object(&boxes[1]);
     add_object(&boxes[1]);
+
+    printf("%d\n", boxes[2].count_of_objects);
+    delete_object(&boxes[2]);
+    delete_object(&boxes[2]);
+    delete_object(&boxes[2]);
+    delete_object(&boxes[2]);
+    printf("%d\n", boxes[2].count_of_objects);
 
 
     bool running = true;
