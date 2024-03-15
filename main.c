@@ -33,7 +33,6 @@ void handle_error(const char* message, TTF_Font* font, SDL_Renderer* renderer, S
 }
 
 void render_button(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Rect button, SDL_Color color) {
-
     SDL_Surface* surface = TTF_RenderText_Solid(font, text, color);
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     int width, height;
@@ -42,6 +41,16 @@ void render_button(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL
     SDL_RenderCopy(renderer, texture, NULL, &rect);
     SDL_FreeSurface(surface);
     SDL_DestroyTexture(texture);
+}
+
+void render_boxes(SDL_Renderer* renderer, SDL_Rect* boxes, SDL_Color* colors, int border_thickness) {
+    for(int i = 0; i < 6; i++) {
+        SDL_SetRenderDrawColor(renderer, colors[i].r, colors[i].g, colors[i].b, colors[i].a);
+        for(int j = 0; j < border_thickness; j++) {
+            SDL_Rect border = {boxes[i].x - j, boxes[i].y - j, boxes[i].w + 2*j, boxes[i].h + 2*j};
+            SDL_RenderDrawRect(renderer, &border);
+        }
+    }
 }
 
 //structure d'un objet
@@ -74,22 +83,13 @@ void delete_object (box* box) {
     }
 }
 
-// Function to display a blue square in the middle of the selected box
-void BuySomething(SDL_Renderer* renderer, int selectedBox, SDL_Rect* boxes) {
-    if (selectedBox >= 0 && selectedBox < 6) {
-        SDL_Rect blue_square = {boxes[selectedBox].x + (boxes[selectedBox].w - 20) / 2, boxes[selectedBox].y + (boxes[selectedBox].h - 20) / 2, 20, 20};
-        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-        SDL_RenderFillRect(renderer, &blue_square);
-    }
-}
-
 int main(int argc, char* argv[]) {
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         handle_error("Error initializing SDL", NULL, NULL, NULL);
     }
 
-    SDL_Window* window = SDL_CreateWindow("Thebig boxes market", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    SDL_Window* window = SDL_CreateWindow("The big boxes market", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     if (window == NULL) {
         handle_error("Error creating window", NULL, NULL, NULL);
     }
@@ -108,86 +108,47 @@ int main(int argc, char* argv[]) {
         handle_error("Error loading font", font, renderer, window);
     }
 
+
     //Créer les boîtes
-    box boxes[6];
     for(int i = 0; i < 6; i++) {
-        boxes[i].number_of_the_box = i;
-        boxes[i].count_of_objects = 0;
-        boxes[i].firstobject = NULL;
+        box box_i;
+        box_i.number_of_the_box = i;
+        box_i.count_of_objects = 0;
+        box_i.firstobject = NULL;
     }
 
-    SDL_Rect boxRects[6];
+    SDL_Rect boxes[6];
     SDL_Color colors[6] = {{160, 93, 201, 255}, {233, 131, 65, 255}, {68, 201, 110, 255}, {218, 217, 67, 255}, {237, 116, 213, 255}, {82, 113, 201, 255}};
     SDL_Color gray = {192, 192, 192, 255};
     SDL_Color darkGray = {128, 128, 128, 255};
+    SDL_Color white = {255, 255, 255, 255};
 
     for(int i = 0; i < 6; i++) {
-        boxRects[i].w = BOX_WIDTH - 2 * MARGIN;
-        boxRects[i].h = BOX_HEIGHT - 2 * MARGIN;
-        boxRects[i].x = (i % 3) * BOX_WIDTH + MARGIN;
-        boxRects[i].y = (i / 3) * (BOX_HEIGHT + MARGIN) + OFFSET_Y;
+        boxes[i].w = BOX_WIDTH - 2 * MARGIN;
+        boxes[i].h = BOX_HEIGHT - 2 * MARGIN;
+        boxes[i].x = (i % 3) * BOX_WIDTH + MARGIN;
+        boxes[i].y = (i / 3) * (BOX_HEIGHT + MARGIN) + OFFSET_Y;
     }
 
-    SDL_Rect buyButton = {WINDOW_WIDTH / 2 - BUTTON_WIDTH - BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
-    SDL_Rect sellButton = {WINDOW_WIDTH / 2 + BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
+    //SDL_Rect buyButton = {WINDOW_WIDTH / 2 - BUTTON_WIDTH - BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
+    //SDL_Rect sellButton = {WINDOW_WIDTH / 2 + BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
 
     bool running = true;
-    int selectedBox = -1; // Initialize selected box to -1
     while (running) {
         SDL_Event event;
         while(SDL_PollEvent(&event)) {
             if(event.type == SDL_QUIT) {
                 running = false;
             }
-            if(event.type == SDL_MOUSEBUTTONDOWN) {
-                if(event.button.button == SDL_BUTTON_LEFT) {
-                    if(event.button.x >= buyButton.x && event.button.x <= buyButton.x + buyButton.w && event.button.y >= buyButton.y && event.button.y <= buyButton.y + buyButton.h) {
-                        selectedBox = -1; // Reset selected box when pressing "buy"
-                    } else if (selectedBox >= 0 && selectedBox < 6) {
-                        // User clicked on a box
-                        BuySomething(renderer, selectedBox, boxRects);
-                    } else {
-                        // Check if the user clicked on a box
-                        for(int i = 0; i < 6; i++) {
-                            if(event.button.x >= boxRects[i].x && event.button.x <= boxRects[i].x + boxRects[i].w && event.button.y >= boxRects[i].y && event.button.y <= boxRects[i].y + boxRects[i].h) {
-                                selectedBox = i;
-                                break;
-                            } else {
-                                selectedBox = -1;
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
 
-        for(int i = 0; i < 6; i++) {
-            SDL_SetRenderDrawColor(renderer, colors[i].r, colors[i].g, colors[i].b, colors[i].a);
-            for(int j = 0; j < BORDER_THICKNESS; j++) {
-                SDL_Rect border = {boxRects[i].x - j, boxRects[i].y - j, boxRects[i].w + 2*j, boxRects[i].h + 2*j};
-                SDL_RenderDrawRect(renderer, &border);
-            }
-        }
+        render_boxes(renderer, boxes, colors, BORDER_THICKNESS);
 
-        int x, y;
-        SDL_GetMouseState(&x, &y);
-        bool isBuyHovered = x >= buyButton.x && x <= buyButton.x + buyButton.w && y >= buyButton.y && y <= buyButton.y + buyButton.h;
-        bool isSellHovered = x >= sellButton.x && x <= sellButton.x + sellButton.w && y >= sellButton.y && y <= sellButton.y + sellButton.h;
-
-        SDL_Color white = {255, 255, 255, 255};
-        render_button(renderer, font, "BUY", buyButton, isBuyHovered ? darkGray : gray);
-        render_button(renderer, font, "SELL", sellButton, isSellHovered ? darkGray : gray);
-
-        // Check if the user clicked on a box
-        for(int i = 0; i < 6; i++) {
-            if (selectedBox == i) {
-                SDL_SetRenderDrawColor(renderer, colors[i].r, colors[i].g, colors[i].b, 128); // Partially transparent color for the selected box
-                SDL_RenderFillRect(renderer, &boxRects[i]);
-            }
-        }
+        //render_button(renderer, font, "BUY", buyButton, isBuyHovered ? darkGray : gray);
+       // render_button(renderer, font, "SELL", sellButton, isSellHovered ? darkGray : gray);
 
         SDL_RenderPresent(renderer);
 
