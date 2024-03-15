@@ -16,7 +16,7 @@
 #define BUTTON_HEIGHT 50
 #define BUTTON_MARGIN 35
 #define RED_OBJECT_SIZE 25
-#define MARGIN_BETWEEN_OBJECTS 10
+#define MARGIN_BETWEEN_OBJECTS 14
 
 void handle_error(const char* message, TTF_Font* font, SDL_Renderer* renderer, SDL_Window* window) {
     printf("%s: %s\n", message, SDL_GetError());
@@ -86,11 +86,17 @@ typedef struct box {
 } box;
 
 //Pour ajouter des objets à une boîte
-void add_object (box* box) {
+bool add_object (box* box) {
+    int max_objects = (BOX_WIDTH - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS) * (BOX_HEIGHT - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS);
+    if (box->count_of_objects >= max_objects) {
+        // La boîte est pleine
+        return false;
+    }
     object* new_object = (object*)malloc(sizeof(object));
     new_object->next = box->firstobject;
     box->firstobject = new_object;
     box->count_of_objects++;
+    return true;
 }
 
 //Pour supprimer des objets d'une boîte
@@ -106,21 +112,23 @@ void delete_object (box* box) {
 // Dessine les objets
 void render_objects_in_boxes(SDL_Renderer* renderer, box* boxes, SDL_Rect* box_rects) {
     SDL_Color red = {255, 0, 0, 255};
-    int object_size = RED_OBJECT_SIZE;
     for(int i = 0; i < 6; i++) {
         object* current_object = boxes[i].firstobject;
         int j = 0;
         while (current_object != NULL) {
-            int column = j % 4; // Numéro de colonne (0 à 3)
-            int row = j / 4; // Numéro de ligne (0 à 4)
+            int column = j % ((BOX_WIDTH - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS)); // Numéro de colonne
+            int row = j / ((BOX_WIDTH - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS)); // Numéro de ligne
             SDL_Rect object_rect = {
-                    box_rects[i].x + MARGIN_BETWEEN_OBJECTS + column * (object_size + MARGIN_BETWEEN_OBJECTS),
-                    box_rects[i].y + MARGIN_BETWEEN_OBJECTS + row * (object_size + MARGIN_BETWEEN_OBJECTS),
-                    object_size,
-                    object_size
+                    box_rects[i].x + MARGIN_BETWEEN_OBJECTS + column * (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS),
+                    box_rects[i].y + MARGIN_BETWEEN_OBJECTS + row * (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS),
+                    RED_OBJECT_SIZE,
+                    RED_OBJECT_SIZE
             };
-            SDL_SetRenderDrawColor(renderer, red.r, red.g, red.b, red.a);
-            SDL_RenderFillRect(renderer, &object_rect);
+            if (object_rect.y + object_rect.h <= box_rects[i].y + box_rects[i].h) {
+                // L'objet ne dépasse pas de la boîte
+                SDL_SetRenderDrawColor(renderer, red.r, red.g, red.b, red.a);
+                SDL_RenderFillRect(renderer, &object_rect);
+            }
             current_object = current_object->next;
             j++;
         }
@@ -181,10 +189,9 @@ int main(int argc, char* argv[]) {
     SDL_Rect sellButton = {WINDOW_WIDTH / 2 + BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
 
     //test test
-    add_object(&boxes[2]);
-    add_object(&boxes[2]);
-    add_object(&boxes[2]);
-    add_object(&boxes[2]);
+    for (int i = 0; i < 30; ++i) {
+        add_object(&boxes[2]);
+    }
 
     delete_object(&boxes[2]);
 
