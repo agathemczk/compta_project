@@ -42,50 +42,6 @@ void render_button(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL
     SDL_FreeSurface(surface);
     SDL_DestroyTexture(texture);
 }
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <time.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
-#define BOX_HEIGHT ((WINDOW_HEIGHT * 2 / 3) / 2)
-#define BOX_WIDTH (WINDOW_WIDTH / 3)
-#define MARGIN 10
-#define BORDER_THICKNESS 5
-#define OFFSET_Y 10
-#define BUTTON_WIDTH 150
-#define BUTTON_HEIGHT 50
-#define BUTTON_MARGIN 35
-
-void handle_error(const char* message, TTF_Font* font, SDL_Renderer* renderer, SDL_Window* window) {
-    printf("%s: %s\n", message, SDL_GetError());
-    if (font != NULL) {
-        TTF_CloseFont(font);
-    }
-    if (renderer != NULL) {
-        SDL_DestroyRenderer(renderer);
-    }
-    if (window != NULL) {
-        SDL_DestroyWindow(window);
-    }
-    TTF_Quit();
-    SDL_Quit();
-    exit(1);
-}
-
-void render_button(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Rect button, SDL_Color color) {
-    SDL_Surface* surface = TTF_RenderText_Solid(font, text, color);
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    int width, height;
-    SDL_QueryTexture(texture, NULL, NULL, &width, &height);
-    SDL_Rect rect = {button.x + (button.w - width) / 2, button.y + (button.h - height) / 2, width, height};
-    SDL_RenderCopy(renderer, texture, NULL, &rect);
-    SDL_FreeSurface(surface);
-    SDL_DestroyTexture(texture);
-}
 
 void render_boxes(SDL_Renderer* renderer, SDL_Rect* boxes, SDL_Color* colors, int border_thickness) {
     for(int i = 0; i < 6; i++) {
@@ -161,6 +117,9 @@ int main(int argc, char* argv[]) {
         box_i.firstobject = NULL;
     }
 
+    bool isBuyHovered = false;
+    bool isSellHovered = false;
+
     SDL_Rect boxes[6];
     SDL_Color colors[6] = {{160, 93, 201, 255}, {233, 131, 65, 255}, {68, 201, 110, 255}, {218, 217, 67, 255}, {237, 116, 213, 255}, {82, 113, 201, 255}};
     SDL_Color gray = {192, 192, 192, 255};
@@ -174,8 +133,8 @@ int main(int argc, char* argv[]) {
         boxes[i].y = (i / 3) * (BOX_HEIGHT + MARGIN) + OFFSET_Y;
     }
 
-    //SDL_Rect buyButton = {WINDOW_WIDTH / 2 - BUTTON_WIDTH - BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
-    //SDL_Rect sellButton = {WINDOW_WIDTH / 2 + BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
+    SDL_Rect buyButton = {WINDOW_WIDTH / 2 - BUTTON_WIDTH - BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
+    SDL_Rect sellButton = {WINDOW_WIDTH / 2 + BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
 
     bool running = true;
     while (running) {
@@ -186,13 +145,15 @@ int main(int argc, char* argv[]) {
             }
         }
 
+        update_button_hover(buyButton, sellButton, &isBuyHovered, &isSellHovered);
+
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
 
         render_boxes(renderer, boxes, colors, BORDER_THICKNESS);
 
-        //render_button(renderer, font, "BUY", buyButton, isBuyHovered ? darkGray : gray);
-        // render_button(renderer, font, "SELL", sellButton, isSellHovered ? darkGray : gray);
+        render_button(renderer, font, "BUY", buyButton, isBuyHovered ? darkGray : gray);
+        render_button(renderer, font, "SELL", sellButton, isSellHovered ? darkGray : gray);
 
         SDL_RenderPresent(renderer);
 
