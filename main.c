@@ -15,6 +15,8 @@
 #define BUTTON_WIDTH 150
 #define BUTTON_HEIGHT 50
 #define BUTTON_MARGIN 35
+#define RED_OBJECT_SIZE 25
+#define MARGIN_BETWEEN_OBJECTS 10
 
 void handle_error(const char* message, TTF_Font* font, SDL_Renderer* renderer, SDL_Window* window) {
     printf("%s: %s\n", message, SDL_GetError());
@@ -101,11 +103,10 @@ void delete_object (box* box) {
     }
 }
 
-// Dessine un carré rouge dans une boîte pour chaque objet
+// Dessine les objets
 void render_objects_in_boxes(SDL_Renderer* renderer, box* boxes, SDL_Rect* box_rects) {
     SDL_Color red = {255, 0, 0, 255};
-    int object_size = 25; // Taille des carrés rouges
-    int margin = 10; // Espace entre les carrés rouges
+    int object_size = RED_OBJECT_SIZE;
     for(int i = 0; i < 6; i++) {
         object* current_object = boxes[i].firstobject;
         int j = 0;
@@ -113,8 +114,8 @@ void render_objects_in_boxes(SDL_Renderer* renderer, box* boxes, SDL_Rect* box_r
             int column = j % 4; // Numéro de colonne (0 à 3)
             int row = j / 4; // Numéro de ligne (0 à 4)
             SDL_Rect object_rect = {
-                    box_rects[i].x + margin + column * (object_size + margin),
-                    box_rects[i].y + margin + row * (object_size + margin),
+                    box_rects[i].x + MARGIN_BETWEEN_OBJECTS + column * (object_size + MARGIN_BETWEEN_OBJECTS),
+                    box_rects[i].y + MARGIN_BETWEEN_OBJECTS + row * (object_size + MARGIN_BETWEEN_OBJECTS),
                     object_size,
                     object_size
             };
