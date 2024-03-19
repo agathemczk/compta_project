@@ -20,7 +20,12 @@
 #define BUTTON_WIDTH 150
 #define BUTTON_HEIGHT 50
 #define BUTTON_MARGIN 35
+<<<<<<< HEAD
 <<<<<<< Updated upstream
+=======
+#define RED_OBJECT_SIZE 25
+#define MARGIN_BETWEEN_OBJECTS 14
+>>>>>>> 3a3d4c74a8dc9adc8d7646e71514847459a9f5bb
 
 void handle_error(const char* message, TTF_Font* font, SDL_Renderer* renderer, SDL_Window* window) {
     printf("%s: %s\n", message, SDL_GetError());
@@ -39,6 +44,7 @@ void handle_error(const char* message, TTF_Font* font, SDL_Renderer* renderer, S
 }
 
 void render_button(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Rect button, SDL_Color color) {
+    SDL_Color white = {255, 255, 255, 255};
     SDL_Surface* surface = TTF_RenderText_Solid(font, text, white);
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     int width, height;
@@ -49,6 +55,14 @@ void render_button(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL
     SDL_DestroyTexture(texture);
 }
 
+<<<<<<< HEAD
+=======
+void render_button_background(SDL_Renderer* renderer, SDL_Rect button, SDL_Color color) {
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+    SDL_RenderFillRect(renderer, &button);
+}
+
+>>>>>>> 3a3d4c74a8dc9adc8d7646e71514847459a9f5bb
 void render_boxes(SDL_Renderer* renderer, SDL_Rect* boxes, SDL_Color* colors, int border_thickness) {
     for(int i = 0; i < 6; i++) {
         SDL_SetRenderDrawColor(renderer, colors[i].r, colors[i].g, colors[i].b, colors[i].a);
@@ -59,6 +73,21 @@ void render_boxes(SDL_Renderer* renderer, SDL_Rect* boxes, SDL_Color* colors, in
     }
 }
 
+<<<<<<< HEAD
+=======
+bool is_mouse_over(SDL_Rect button) {
+    int x, y;
+    SDL_GetMouseState(&x, &y);
+    return (x >= button.x && x <= button.x + button.w && y >= button.y && y <= button.y + button.h);
+}
+
+void update_button_hover(SDL_Rect buyButton, SDL_Rect sellButton, bool* isBuyHovered, bool* isSellHovered) {
+    *isBuyHovered = is_mouse_over(buyButton);
+    *isSellHovered = is_mouse_over(sellButton);
+}
+
+
+>>>>>>> 3a3d4c74a8dc9adc8d7646e71514847459a9f5bb
 //structure d'un objet
 typedef struct object {
     struct object* next;
@@ -72,23 +101,38 @@ typedef struct box {
 } box;
 
 //Pour ajouter des objets à une boîte
-void add_object (box* box) {
+bool add_object (box* box) {
+    int max_objects = (BOX_WIDTH - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS) * (BOX_HEIGHT - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS);
+    if (box->count_of_objects >= max_objects) {
+        // La boîte est pleine
+        return false;
+    }
     object* new_object = (object*)malloc(sizeof(object));
     new_object->next = box->firstobject;
     box->firstobject = new_object;
     box->count_of_objects++;
+    return true;
 }
 
 //Pour supprimer des objets d'une boîte
 void delete_object (box* box) {
     if (box->firstobject != NULL) {
-        object* next_object = box->firstobject->next;
-        free(box->firstobject);
-        box->firstobject = next_object;
+        if (box->firstobject->next == NULL) {
+            free(box->firstobject);
+            box->firstobject = NULL;
+        } else {
+            object* current_object = box->firstobject;
+            while (current_object->next->next != NULL) {
+                current_object = current_object->next;
+            }
+            free(current_object->next);
+            current_object->next = NULL;
+        }
         box->count_of_objects--;
     }
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> e914cbc709f7c60b1f4815aaa68521c44465a662
 
@@ -150,6 +194,40 @@ int main(){
 } Container;
 
 >>>>>>> Stashed changes
+=======
+// Dessine les objets
+void render_objects_in_boxes(SDL_Renderer* renderer, box* boxes, SDL_Rect* box_rects) {
+    SDL_Color red = {255, 0, 0, 255};
+    for(int i = 0; i < 6; i++) {
+        object* current_object = boxes[i].firstobject;
+        int j = 0;
+        int count = 0; // Compte le nombre d'objets qui peuvent être dessinés dans la boîte
+        while (current_object != NULL) {
+            int column = j % ((BOX_WIDTH - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS)); // Numéro de colonne
+            int row = j / ((BOX_WIDTH - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS)); // Numéro de ligne
+            SDL_Rect object_rect = {
+                    box_rects[i].x + MARGIN_BETWEEN_OBJECTS + column * (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS),
+                    box_rects[i].y + MARGIN_BETWEEN_OBJECTS + row * (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS),
+                    RED_OBJECT_SIZE,
+                    RED_OBJECT_SIZE
+            };
+            if (object_rect.y + object_rect.h <= box_rects[i].y + box_rects[i].h) {
+                // L'objet ne dépasse pas de la boîte
+                SDL_SetRenderDrawColor(renderer, red.r, red.g, red.b, red.a);
+                SDL_RenderFillRect(renderer, &object_rect);
+                count++; // Incrémente le compteur
+            }
+            current_object = current_object->next;
+            j++;
+        }
+        boxes[i].count_of_objects = count; // Met à jour le compteur d'objets de la boîte
+    }
+}
+
+
+
+
+>>>>>>> 3a3d4c74a8dc9adc8d7646e71514847459a9f5bb
 int main(int argc, char* argv[]) {
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -176,35 +254,58 @@ int main(int argc, char* argv[]) {
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
+=======
+    bool isBuyHovered = false;
+    bool isSellHovered = false;
+
+>>>>>>> 3a3d4c74a8dc9adc8d7646e71514847459a9f5bb
 
 >>>>>>> 2d2e5f6a142ab97d47904a240f547cde897df314
     //Créer les boîtes
+    box boxes[6];
     for(int i = 0; i < 6; i++) {
-        box box_i;
-        box_i.number_of_the_box = i;
-        box_i.count_of_objects = 0;
-        box_i.firstobject = NULL;
+        boxes[i].number_of_the_box = i;
+        boxes[i].count_of_objects = 0;
+        boxes[i].firstobject = NULL;
     }
 
+<<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
     SDL_Rect boxes[6];
+=======
+    SDL_Rect box_rects[6];
+>>>>>>> 3a3d4c74a8dc9adc8d7646e71514847459a9f5bb
     SDL_Color colors[6] = {{160, 93, 201, 255}, {233, 131, 65, 255}, {68, 201, 110, 255}, {218, 217, 67, 255}, {237, 116, 213, 255}, {82, 113, 201, 255}};
     SDL_Color gray = {192, 192, 192, 255};
     SDL_Color darkGray = {128, 128, 128, 255};
-    SDL_Color white = {255, 255, 255, 255};
 
     for(int i = 0; i < 6; i++) {
-        boxes[i].w = BOX_WIDTH - 2 * MARGIN;
-        boxes[i].h = BOX_HEIGHT - 2 * MARGIN;
-        boxes[i].x = (i % 3) * BOX_WIDTH + MARGIN;
-        boxes[i].y = (i / 3) * (BOX_HEIGHT + MARGIN) + OFFSET_Y;
+        box_rects[i].w = BOX_WIDTH - 2 * MARGIN;
+        box_rects[i].h = BOX_HEIGHT - 2 * MARGIN;
+        box_rects[i].x = (i % 3) * BOX_WIDTH + MARGIN;
+        box_rects[i].y = (i / 3) * (BOX_HEIGHT + MARGIN) + OFFSET_Y;
     }
 
     SDL_Rect buyButton = {WINDOW_WIDTH / 2 - BUTTON_WIDTH - BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
     SDL_Rect sellButton = {WINDOW_WIDTH / 2 + BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
+
+    //test test
+    for (int i = 0; i < 25; ++i) {
+        add_object(&boxes[2]);
+    }
+
+    delete_object(&boxes[1]);
+    add_object(&boxes[1]);
+
+    printf("%d\n", boxes[2].count_of_objects);
+    delete_object(&boxes[2]);
+    delete_object(&boxes[2]);
+    printf("%d\n", boxes[2].count_of_objects);
+
 
     bool running = true;
     while (running) {
@@ -215,13 +316,24 @@ int main(int argc, char* argv[]) {
             }
         }
 
+        update_button_hover(buyButton, sellButton, &isBuyHovered, &isSellHovered);
+
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
 
+<<<<<<< HEAD
         render_boxes(renderer, boxes, colors, BORDER_THICKNESS);
+=======
+        render_boxes(renderer, box_rects, colors, BORDER_THICKNESS);
+>>>>>>> 3a3d4c74a8dc9adc8d7646e71514847459a9f5bb
 
+        render_button_background(renderer, buyButton, isBuyHovered ? darkGray : gray);
         render_button(renderer, font, "BUY", buyButton, isBuyHovered ? darkGray : gray);
+
+        render_button_background(renderer, sellButton, isSellHovered ? darkGray : gray);
         render_button(renderer, font, "SELL", sellButton, isSellHovered ? darkGray : gray);
+
+        render_objects_in_boxes(renderer, boxes, box_rects);
 
         SDL_RenderPresent(renderer);
 
