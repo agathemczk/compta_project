@@ -5,10 +5,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-#define WINDOW_WIDTH 800
+#define WINDOW_WIDTH 1000 // Increased window width
 #define WINDOW_HEIGHT 600
 #define BOX_HEIGHT ((WINDOW_HEIGHT * 2 / 3) / 2)
-#define BOX_WIDTH (WINDOW_WIDTH / 3)
+#define BOX_WIDTH ((WINDOW_WIDTH - 200) / 3) // Adjusted box width
 #define MARGIN 10
 #define BORDER_THICKNESS 5
 #define OFFSET_Y 10
@@ -16,6 +16,7 @@
 #define BUTTON_HEIGHT 50
 #define BUTTON_MARGIN 35
 #define MARGIN_BETWEEN_OBJECTS 14
+#define MENU_WIDTH 200 // Width of the new menu
 
 void handle_error(const char* message, TTF_Font* font, SDL_Renderer* renderer, SDL_Window* window) {
     printf("%s: %s\n", message, SDL_GetError());
@@ -178,6 +179,35 @@ void render_objects_in_boxes(SDL_Renderer* renderer, box* boxes, SDL_Rect* box_r
     }
 }
 
+void render_menu(SDL_Renderer* renderer, TTF_Font* font, box* boxes) {
+    SDL_Color white = {255, 255, 255, 255};
+    SDL_Rect menu_rect = {WINDOW_WIDTH - MENU_WIDTH, 0, MENU_WIDTH, WINDOW_HEIGHT};
+    SDL_SetRenderDrawColor(renderer, 192, 192, 192, 255);
+    SDL_RenderFillRect(renderer, &menu_rect);
+
+    type_of_object* types[] = {&APPLE, &KIWI, &BANANA, &STRAWBERRY, &IPAD};
+    for(int i = 0; i < sizeof(types) / sizeof(types[0]); i++) {
+        int total_count = 0;
+        for(int j = 0; j < 6; j++) {
+            object* current_object = boxes[j].firstobject;
+            while (current_object != NULL) {
+                if (current_object->type == types[i]) {
+                    total_count++;
+                }
+                current_object = current_object->next;
+            }
+        }
+        char text[50];
+        sprintf(text, "%s: %d", types[i]->name, total_count);
+        SDL_Surface* surface = TTF_RenderText_Solid(font, text, white);
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_Rect rect = {WINDOW_WIDTH - MENU_WIDTH + 10, i * 30 + 10, surface->w, surface->h};
+        SDL_RenderCopy(renderer, texture, NULL, &rect);
+        SDL_FreeSurface(surface);
+        SDL_DestroyTexture(texture);
+    }
+}
+
 
 int main(int argc, char* argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -267,6 +297,9 @@ int main(int argc, char* argv[]) {
 
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
+
+        render_menu(renderer, font, boxes); // Render the menu
+
 
         render_boxes(renderer, box_rects, colors, BORDER_THICKNESS);
 
