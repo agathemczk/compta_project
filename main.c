@@ -73,6 +73,7 @@ type_of_object KIWI = {"Kiwi", {36, 203, 120, 255}, 25};
 type_of_object BANANA = {"Banana", {215, 211, 50, 255}, 25};
 type_of_object STRAWBERRY = {"Strawberry", {255, 136, 166, 255}, 25};
 type_of_object IPAD = {"Ipad", {183, 154, 161, 255}, 25};
+type_of_object BLUEBERRY = {"Blueberry", {66, 49, 156, 255}, 25};
 
 typedef struct object {
     type_of_object* type;
@@ -185,7 +186,7 @@ void render_menu(SDL_Renderer* renderer, TTF_Font* font, box* boxes) {
     SDL_SetRenderDrawColor(renderer, 95, 78, 70, 255);
     SDL_RenderFillRect(renderer, &menu_rect);
 
-    type_of_object* types[] = {&APPLE, &KIWI, &BANANA, &STRAWBERRY, &IPAD};
+    type_of_object* types[] = {&APPLE, &KIWI, &BANANA, &STRAWBERRY, &IPAD, &BLUEBERRY};
     for(int i = 0; i < sizeof(types) / sizeof(types[0]); i++) {
         int total_count = 0;
         for(int j = 0; j < 6; j++) {
@@ -271,6 +272,9 @@ int main(int argc, char* argv[]) {
     add_object(&boxes[1],&KIWI);
 
     add_object(&boxes[5],&STRAWBERRY);
+    add_object(&boxes[5],&BLUEBERRY);
+    add_object(&boxes[5],&BLUEBERRY);
+    add_object(&boxes[5],&BLUEBERRY);
 
 
     for (int i = 0; i < 6; ++i) {
