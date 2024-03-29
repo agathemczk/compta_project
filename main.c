@@ -15,7 +15,6 @@
 #define BUTTON_WIDTH 150
 #define BUTTON_HEIGHT 50
 #define BUTTON_MARGIN 35
-#define RED_OBJECT_SIZE 25
 #define MARGIN_BETWEEN_OBJECTS 14
 
 void handle_error(const char* message, TTF_Font* font, SDL_Renderer* renderer, SDL_Window* window) {
@@ -68,11 +67,11 @@ typedef struct type_of_object {
     int size;
 } type_of_object;
 
-type_of_object APPLE = {"Apple", {255, 0, 0, 255}, 25}; //nom, couleur, taille
-type_of_object KIWI = {"Kiwi", {255, 255, 0, 255}, 20};
-type_of_object BANANA = {"Banana", {0, 255, 0, 255}, 15};
-type_of_object STRAWBERRY = {"Strawberry", {255, 0, 255, 255}, 10};
-type_of_object IPAD = {"Ipad", {0, 0, 255, 255}, 35};
+type_of_object APPLE = {"Apple", {203, 65, 36, 255}, 25}; //nom, couleur, taille
+type_of_object KIWI = {"Kiwi", {36, 203, 120, 255}, 20};
+type_of_object BANANA = {"Banana", {215, 211, 50, 255}, 15};
+type_of_object STRAWBERRY = {"Strawberry", {255, 136, 166, 255}, 10};
+type_of_object IPAD = {"Ipad", {183, 154, 161, 255}, 35};
 
 typedef struct object {
     type_of_object* type;
@@ -226,6 +225,12 @@ int main(int argc, char* argv[]) {
     add_object(&boxes[4], &STRAWBERRY);
     add_object(&boxes[4], &STRAWBERRY);
     add_object(&boxes[4], &STRAWBERRY);
+
+    add_object(&boxes[0],&IPAD);
+    add_object(&boxes[1],&KIWI);
+
+    add_object(&boxes[5],&STRAWBERRY);
+
 
     for (int i = 0; i < 6; ++i) {
         add_object(&boxes[4], &BANANA);
