@@ -182,7 +182,7 @@ void render_objects_in_boxes(SDL_Renderer* renderer, box* boxes, SDL_Rect* box_r
 void render_menu(SDL_Renderer* renderer, TTF_Font* font, box* boxes) {
     SDL_Color white = {255, 255, 255, 255};
     SDL_Rect menu_rect = {WINDOW_WIDTH - MENU_WIDTH, 0, MENU_WIDTH, WINDOW_HEIGHT};
-    SDL_SetRenderDrawColor(renderer, 192, 192, 192, 255);
+    SDL_SetRenderDrawColor(renderer, 95, 78, 70, 255);
     SDL_RenderFillRect(renderer, &menu_rect);
 
     type_of_object* types[] = {&APPLE, &KIWI, &BANANA, &STRAWBERRY, &IPAD};
@@ -255,8 +255,8 @@ int main(int argc, char* argv[]) {
         box_rects[i].y = (i / 3) * (BOX_HEIGHT + MARGIN) + OFFSET_Y;
     }
 
-    SDL_Rect buyButton = {WINDOW_WIDTH / 2 - BUTTON_WIDTH - BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
-    SDL_Rect sellButton = {WINDOW_WIDTH / 2 + BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
+    SDL_Rect buyButton = {(3 * BOX_WIDTH) / 2 - BUTTON_WIDTH - BUTTON_MARGIN, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
+    SDL_Rect sellButton = {(3 * BOX_WIDTH) / 2 + BUTTON_MARGIN, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
 
 //LES TESTS ICI
     add_object(&boxes[2], &APPLE);
