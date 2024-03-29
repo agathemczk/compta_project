@@ -68,10 +68,10 @@ typedef struct type_of_object {
 } type_of_object;
 
 type_of_object APPLE = {"Apple", {203, 65, 36, 255}, 25}; //nom, couleur, taille
-type_of_object KIWI = {"Kiwi", {36, 203, 120, 255}, 20};
-type_of_object BANANA = {"Banana", {215, 211, 50, 255}, 15};
-type_of_object STRAWBERRY = {"Strawberry", {255, 136, 166, 255}, 10};
-type_of_object IPAD = {"Ipad", {183, 154, 161, 255}, 35};
+type_of_object KIWI = {"Kiwi", {36, 203, 120, 255}, 25};
+type_of_object BANANA = {"Banana", {215, 211, 50, 255}, 25};
+type_of_object STRAWBERRY = {"Strawberry", {255, 136, 166, 255}, 25};
+type_of_object IPAD = {"Ipad", {183, 154, 161, 255}, 25};
 
 typedef struct object {
     type_of_object* type;
@@ -97,8 +97,16 @@ bool add_object (box* box, type_of_object* type) {
     else {
         object* new_object = (object*)malloc(sizeof(object));
         new_object->type = type;
-        new_object->next = box->firstobject;
-        box->firstobject = new_object;
+        new_object->next = NULL;
+        if (box->firstobject == NULL) {
+            box->firstobject = new_object;
+        } else {
+            object* current_object = box->firstobject;
+            while (current_object->next != NULL) {
+                current_object = current_object->next;
+            }
+            current_object->next = new_object;
+        }
         box->count_of_objects++;
         return true;
     }
@@ -146,10 +154,13 @@ void render_objects_in_boxes(SDL_Renderer* renderer, box* boxes, SDL_Rect* box_r
         if (boxes[i].firstobject == NULL) {
             continue;
         }
-        int max_objects = max_objects_in_box(boxes[i].firstobject->type);
         object* current_object = boxes[i].firstobject;
         int count = 0;
-        while (current_object != NULL && count < max_objects) {
+        while (current_object != NULL) {
+            int max_objects = max_objects_in_box(current_object->type);
+            if (count >= max_objects) {
+                break;
+            }
             int column = count % ((BOX_WIDTH - 2 * MARGIN) / (current_object->type->size + MARGIN_BETWEEN_OBJECTS));
             int row = count / ((BOX_WIDTH - 2 * MARGIN) / (current_object->type->size + MARGIN_BETWEEN_OBJECTS));
             int x = column * (current_object->type->size + MARGIN_BETWEEN_OBJECTS) + MARGIN;
@@ -235,6 +246,12 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < 6; ++i) {
         add_object(&boxes[4], &BANANA);
     }
+
+    for (int i = 0; i < 12; ++i) {
+        add_object(&boxes[4], &IPAD);
+    }
+
+
     printf("%d\n", boxes[4].count_of_objects);
 
     bool running = true;
