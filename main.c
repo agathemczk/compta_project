@@ -51,16 +51,6 @@ void render_button_background(SDL_Renderer* renderer, SDL_Rect button, SDL_Color
     SDL_RenderFillRect(renderer, &button);
 }
 
-void render_boxes(SDL_Renderer* renderer, SDL_Rect* boxes, SDL_Color* colors, int border_thickness) {
-    for(int i = 0; i < 6; i++) {
-        SDL_SetRenderDrawColor(renderer, colors[i].r, colors[i].g, colors[i].b, colors[i].a);
-        for(int j = 0; j < border_thickness; j++) {
-            SDL_Rect border = {boxes[i].x - j, boxes[i].y - j, boxes[i].w + 2*j, boxes[i].h + 2*j};
-            SDL_RenderDrawRect(renderer, &border);
-        }
-    }
-}
-
 bool is_mouse_over(SDL_Rect button) {
     int x, y;
     SDL_GetMouseState(&x, &y);
@@ -72,34 +62,35 @@ void update_button_hover(SDL_Rect buyButton, SDL_Rect sellButton, bool* isBuyHov
     *isSellHovered = is_mouse_over(sellButton);
 }
 
-
-//structure d'un objet
 typedef struct object {
     struct object* next;
 } object;
 
-//structure d'une boîte, avec son numéro et le count d'objets qu'elle contient
 typedef struct box {
     int number_of_the_box;
     int count_of_objects;
     object* firstobject;
 } box;
 
-//Pour ajouter des objets à une boîte
-bool add_object (box* box) {
-    int max_objects = (BOX_WIDTH - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS) * (BOX_HEIGHT - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS);
-    if (box->count_of_objects >= max_objects) {
-        // La boîte est pleine
-        return false;
-    }
-    object* new_object = (object*)malloc(sizeof(object));
-    new_object->next = box->firstobject;
-    box->firstobject = new_object;
-    box->count_of_objects++;
-    return true;
+
+int max_objects_in_box() {
+    return (int)((BOX_WIDTH - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS) + 0.5) * (int)((BOX_HEIGHT - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS) + 0.5);
 }
 
-//Pour supprimer des objets d'une boîte
+bool add_object (box* box) {
+    int max_objects = max_objects_in_box();
+    if (box->count_of_objects >= max_objects) {
+        return false;
+    }
+    else {
+        object* new_object = (object*)malloc(sizeof(object));
+        new_object->next = box->firstobject;
+        box->firstobject = new_object;
+        box->count_of_objects++;
+        return true;
+    }
+}
+
 void delete_object (box* box) {
     if (box->firstobject != NULL) {
         if (box->firstobject->next == NULL) {
@@ -117,40 +108,43 @@ void delete_object (box* box) {
     }
 }
 
-// Dessine les objets
+void render_boxes(SDL_Renderer* renderer, SDL_Rect* boxes, SDL_Color* colors, int border_thickness) {
+    for(int i = 0; i < 6; i++) {
+        SDL_SetRenderDrawColor(renderer, colors[i].r, colors[i].g, colors[i].b, colors[i].a);
+        for(int j = 0; j < border_thickness; j++) {
+            SDL_Rect border = {boxes[i].x - j, boxes[i].y - j, boxes[i].w + 2*j, boxes[i].h + 2*j};
+            SDL_RenderDrawRect(renderer, &border);
+        }
+    }
+}
+
+
 void render_objects_in_boxes(SDL_Renderer* renderer, box* boxes, SDL_Rect* box_rects) {
     SDL_Color red = {255, 0, 0, 255};
+    int max_objects = max_objects_in_box();
     for(int i = 0; i < 6; i++) {
         object* current_object = boxes[i].firstobject;
-        int j = 0;
-        int count = 0; // Compte le nombre d'objets qui peuvent être dessinés dans la boîte
-        while (current_object != NULL) {
-            int column = j % ((BOX_WIDTH - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS)); // Numéro de colonne
-            int row = j / ((BOX_WIDTH - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS)); // Numéro de ligne
-            SDL_Rect object_rect = {
-                    box_rects[i].x + MARGIN_BETWEEN_OBJECTS + column * (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS),
-                    box_rects[i].y + MARGIN_BETWEEN_OBJECTS + row * (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS),
-                    RED_OBJECT_SIZE,
-                    RED_OBJECT_SIZE
-            };
+        while (current_object != NULL && boxes[i].count_of_objects < max_objects) {
+            int column = boxes[i].count_of_objects % ((BOX_WIDTH - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS));
+            int row = boxes[i].count_of_objects / ((BOX_WIDTH - 2 * MARGIN) / (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS));
+            int x = column * (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS) + MARGIN;
+            int y = row * (RED_OBJECT_SIZE + MARGIN_BETWEEN_OBJECTS) + MARGIN;
+            int px = x + box_rects[i].x;
+            int py = y + box_rects[i].y;
+            SDL_Rect object_rect = {px, py, RED_OBJECT_SIZE, RED_OBJECT_SIZE};
             if (object_rect.y + object_rect.h <= box_rects[i].y + box_rects[i].h) {
-                // L'objet ne dépasse pas de la boîte
                 SDL_SetRenderDrawColor(renderer, red.r, red.g, red.b, red.a);
                 SDL_RenderFillRect(renderer, &object_rect);
-                count++; // Incrémente le compteur
+                boxes[i].count_of_objects ++;
             }
             current_object = current_object->next;
-            j++;
         }
-        boxes[i].count_of_objects = count; // Met à jour le compteur d'objets de la boîte
     }
 }
 
 
 
-
 int main(int argc, char* argv[]) {
-
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         handle_error("Error initializing SDL", NULL, NULL, NULL);
     }
@@ -169,7 +163,7 @@ int main(int argc, char* argv[]) {
         handle_error("Error initializing TTF", NULL, renderer, window);
     }
 
-    TTF_Font* font = TTF_OpenFont("C:\\Users\\agath\\Documents\\SDL\\Baloo-Regular.ttf", 25); //à adapter
+    TTF_Font* font = TTF_OpenFont("C:\\Users\\agath\\Documents\\SDL\\Baloo-Regular.ttf", 25);
     if (font == NULL) {
         handle_error("Error loading font", font, renderer, window);
     }
@@ -177,8 +171,6 @@ int main(int argc, char* argv[]) {
     bool isBuyHovered = false;
     bool isSellHovered = false;
 
-
-    //Créer les boîtes
     box boxes[6];
     for(int i = 0; i < 6; i++) {
         boxes[i].number_of_the_box = i;
@@ -201,9 +193,12 @@ int main(int argc, char* argv[]) {
     SDL_Rect buyButton = {WINDOW_WIDTH / 2 - BUTTON_WIDTH - BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
     SDL_Rect sellButton = {WINDOW_WIDTH / 2 + BUTTON_MARGIN / 2, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
 
-    //test test
     for (int i = 0; i < 25; ++i) {
-        add_object(&boxes[2]);
+        if (add_object(&boxes[2])) {
+            printf("Object added successfully\n");
+        } else {
+            printf("Failed to add object\n");
+        }
     }
 
     delete_object(&boxes[1]);
@@ -213,7 +208,6 @@ int main(int argc, char* argv[]) {
     delete_object(&boxes[2]);
     delete_object(&boxes[2]);
     printf("%d\n", boxes[2].count_of_objects);
-
 
     bool running = true;
     while (running) {
@@ -240,7 +234,6 @@ int main(int argc, char* argv[]) {
         render_objects_in_boxes(renderer, boxes, box_rects);
 
         SDL_RenderPresent(renderer);
-
     }
 
     TTF_CloseFont(font);
