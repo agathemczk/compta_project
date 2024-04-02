@@ -215,7 +215,7 @@ void render_menu(SDL_Renderer* renderer, TTF_Font* font, box* boxes) {
     }
 }
 
-void render_sorted_menu(SDL_Renderer* renderer, TTF_Font* font, box* boxes) {
+void render_sorted_by_alpha_menu(SDL_Renderer* renderer, TTF_Font* font, box* boxes) {
     SDL_Color white = {255, 255, 255, 255};
     SDL_Rect menu_rect = {WINDOW_WIDTH - MENU_WIDTH, 0, MENU_WIDTH, WINDOW_HEIGHT};
     SDL_SetRenderDrawColor(renderer, 95, 78, 70, 255);
@@ -260,6 +260,52 @@ void render_sorted_menu(SDL_Renderer* renderer, TTF_Font* font, box* boxes) {
     }
 }
 
+void render_sorted_by_count_menu(SDL_Renderer* renderer, TTF_Font* font, box* boxes) {
+    SDL_Color white = {255, 255, 255, 255};
+    SDL_Rect menu_rect = {WINDOW_WIDTH - MENU_WIDTH, 0, MENU_WIDTH, WINDOW_HEIGHT};
+    SDL_SetRenderDrawColor(renderer, 95, 78, 70, 255);
+    SDL_RenderFillRect(renderer, &menu_rect);
+
+    type_of_object* types[] = {&APPLE, &KIWI, &BANANA, &STRAWBERRY, &IPAD, &BLUEBERRY, &ORANGE};
+    menu_item menu_items[sizeof(types) / sizeof(types[0])];
+
+    for(int i = 0; i < sizeof(types) / sizeof(types[0]); i++) {
+        menu_items[i].type = types[i];
+        menu_items[i].total_count = 0;
+        for(int j = 0; j < 6; j++) {
+            object* current_object = boxes[j].firstobject;
+            while (current_object != NULL) {
+                if (current_object->type == types[i]) {
+                    menu_items[i].total_count++;
+                }
+                current_object = current_object->next;
+            }
+        }
+    }
+
+    for(int i = 0; i < sizeof(types) / sizeof(types[0]) - 1; i++) {
+        for(int j = i + 1; j < sizeof(types) / sizeof(types[0]); j++) {
+            if(menu_items[i].total_count < menu_items[j].total_count) {
+                menu_item temp = menu_items[i];
+                menu_items[i] = menu_items[j];
+                menu_items[j] = temp;
+            }
+        }
+    }
+
+    for(int i = 0; i < sizeof(types) / sizeof(types[0]); i++) {
+        char text[50];
+        sprintf(text, "%s: %d", menu_items[i].type->name, menu_items[i].total_count);
+        SDL_Surface* surface = TTF_RenderText_Solid(font, text, white);
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_Rect rect = {WINDOW_WIDTH - MENU_WIDTH + 10, i * 30 + 10, surface->w, surface->h};
+        SDL_RenderCopy(renderer, texture, NULL, &rect);
+        SDL_FreeSurface(surface);
+        SDL_DestroyTexture(texture);
+    }
+}
+
+
 
 
 int main(int argc, char* argv[]) {
@@ -281,13 +327,16 @@ int main(int argc, char* argv[]) {
         handle_error("Error initializing TTF", NULL, renderer, window);
     }
 
-    TTF_Font* font = TTF_OpenFont("C:\\Users\\agath\\Documents\\SDL\\Baloo-Regular.ttf", 25);
+    TTF_Font* font = TTF_OpenFont("Baloo-Regular.ttf", 25);
     if (font == NULL) {
         handle_error("Error loading font", font, renderer, window);
     }
 
     bool isSortAlphaHovered = false;
     bool isSortCountHovered = false;
+
+    bool sortAlpha = false;
+    bool sortCount = false;
 
     box boxes[6];
     for(int i = 0; i < 6; i++) {
@@ -330,7 +379,6 @@ int main(int argc, char* argv[]) {
         add_object(&boxes[2], &ORANGE);
     }
 
-
     for (int i = 0; i < 3; ++i) {
         add_object(&boxes[2], &BANANA);
     }
@@ -342,10 +390,22 @@ int main(int argc, char* argv[]) {
 
     bool running = true;
     while (running) {
+
         SDL_Event event;
         while(SDL_PollEvent(&event)) {
             if(event.type == SDL_QUIT) {
                 running = false;
+            }
+            if(event.type == SDL_MOUSEBUTTONDOWN) {
+                if(event.button.button == SDL_BUTTON_LEFT) {
+                    if(isSortAlphaHovered) {
+                        sortAlpha = !sortAlpha;
+                        sortCount = false;
+                    } else if(isSortCountHovered) {
+                        sortCount = !sortCount;
+                        sortAlpha = false;
+                    }
+                }
             }
         }
 
@@ -354,7 +414,13 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
 
-        render_sorted_menu(renderer, font, boxes);
+        if (sortAlpha) {
+            render_sorted_by_alpha_menu(renderer, font, boxes);
+        } else if (sortCount) {
+            render_sorted_by_count_menu(renderer, font, boxes);
+        } else {
+            render_menu (renderer, font, boxes);
+        }
 
 
         render_boxes(renderer, box_rects, colors, BORDER_THICKNESS);
