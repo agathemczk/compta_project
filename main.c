@@ -4,6 +4,7 @@
 #include <time.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <string.h>
 
 #define WINDOW_WIDTH 1000 // Increased window width
 #define WINDOW_HEIGHT 600
@@ -87,6 +88,10 @@ typedef struct box {
     object* firstobject;
 } box;
 
+typedef struct menu_item {
+    type_of_object* type;
+    int total_count;
+} menu_item;
 
 int max_objects_in_box(type_of_object* type) {
     return (int)((BOX_WIDTH - 2 * MARGIN) / (type->size + MARGIN_BETWEEN_OBJECTS) + 0.5) * (int)((BOX_HEIGHT - 2 * MARGIN) / (type->size + MARGIN_BETWEEN_OBJECTS) + 0.5);
@@ -210,6 +215,52 @@ void render_menu(SDL_Renderer* renderer, TTF_Font* font, box* boxes) {
     }
 }
 
+void render_sorted_menu(SDL_Renderer* renderer, TTF_Font* font, box* boxes) {
+    SDL_Color white = {255, 255, 255, 255};
+    SDL_Rect menu_rect = {WINDOW_WIDTH - MENU_WIDTH, 0, MENU_WIDTH, WINDOW_HEIGHT};
+    SDL_SetRenderDrawColor(renderer, 95, 78, 70, 255);
+    SDL_RenderFillRect(renderer, &menu_rect);
+
+    type_of_object* types[] = {&APPLE, &KIWI, &BANANA, &STRAWBERRY, &IPAD, &BLUEBERRY, &ORANGE};
+    menu_item menu_items[sizeof(types) / sizeof(types[0])];
+
+    for(int i = 0; i < sizeof(types) / sizeof(types[0]); i++) {
+        menu_items[i].type = types[i];
+        menu_items[i].total_count = 0;
+        for(int j = 0; j < 6; j++) {
+            object* current_object = boxes[j].firstobject;
+            while (current_object != NULL) {
+                if (current_object->type == types[i]) {
+                    menu_items[i].total_count++;
+                }
+                current_object = current_object->next;
+            }
+        }
+    }
+
+    for(int i = 0; i < sizeof(types) / sizeof(types[0]) - 1; i++) {
+        for(int j = i + 1; j < sizeof(types) / sizeof(types[0]); j++) {
+            if(strcmp(menu_items[i].type->name, menu_items[j].type->name) > 0) {
+                menu_item temp = menu_items[i];
+                menu_items[i] = menu_items[j];
+                menu_items[j] = temp;
+            }
+        }
+    }
+
+    for(int i = 0; i < sizeof(types) / sizeof(types[0]); i++) {
+        char text[50];
+        sprintf(text, "%s: %d", menu_items[i].type->name, menu_items[i].total_count);
+        SDL_Surface* surface = TTF_RenderText_Solid(font, text, white);
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_Rect rect = {WINDOW_WIDTH - MENU_WIDTH + 10, i * 30 + 10, surface->w, surface->h};
+        SDL_RenderCopy(renderer, texture, NULL, &rect);
+        SDL_FreeSurface(surface);
+        SDL_DestroyTexture(texture);
+    }
+}
+
+
 
 int main(int argc, char* argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -263,35 +314,32 @@ int main(int argc, char* argv[]) {
 //LES TESTS ICI
     add_object(&boxes[2], &APPLE);
     add_object(&boxes[2], &APPLE);
-    printf("%d\n", boxes[2].count_of_objects);
 
-    add_object(&boxes[4], &STRAWBERRY);
-    add_object(&boxes[4], &STRAWBERRY);
-    add_object(&boxes[4], &STRAWBERRY);
+    add_object(&boxes[2], &STRAWBERRY);
+    add_object(&boxes[2], &STRAWBERRY);
+    add_object(&boxes[2], &STRAWBERRY);
 
-    add_object(&boxes[0],&IPAD);
-    add_object(&boxes[1],&KIWI);
+    add_object(&boxes[2],&IPAD);
+    add_object(&boxes[2],&KIWI);
 
-    add_object(&boxes[5],&STRAWBERRY);
-    add_object(&boxes[5],&BLUEBERRY);
-    add_object(&boxes[5],&BLUEBERRY);
-    add_object(&boxes[5],&BLUEBERRY);
-
-    for (int i = 0; i < 10; ++i) {
-        add_object(&boxes[4], &ORANGE);
-    }
-
+    add_object(&boxes[2],&STRAWBERRY);
+    add_object(&boxes[2],&BLUEBERRY);
+    add_object(&boxes[2],&BLUEBERRY);
+    add_object(&boxes[2],&BLUEBERRY);
 
     for (int i = 0; i < 6; ++i) {
-        add_object(&boxes[4], &BANANA);
-    }
-
-    for (int i = 0; i < 12; ++i) {
-        add_object(&boxes[4], &IPAD);
+        add_object(&boxes[2], &ORANGE);
     }
 
 
-    printf("%d\n", boxes[4].count_of_objects);
+    for (int i = 0; i < 3; ++i) {
+        add_object(&boxes[2], &BANANA);
+    }
+
+    for (int i = 0; i < 3; ++i) {
+        add_object(&boxes[2], &IPAD);
+    }
+
 
     bool running = true;
     while (running) {
@@ -307,7 +355,7 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
 
-        render_menu(renderer, font, boxes); // Render the menu
+        render_sorted_menu(renderer, font, boxes);
 
 
         render_boxes(renderer, box_rects, colors, BORDER_THICKNESS);
