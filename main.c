@@ -13,7 +13,7 @@
 #define MARGIN 10
 #define BORDER_THICKNESS 5
 #define OFFSET_Y 10
-#define BUTTON_WIDTH 150
+#define BUTTON_WIDTH 180
 #define BUTTON_HEIGHT 50
 #define BUTTON_MARGIN 35
 #define MARGIN_BETWEEN_OBJECTS 14
@@ -58,9 +58,9 @@ bool is_mouse_over(SDL_Rect button) {
     return (x >= button.x && x <= button.x + button.w && y >= button.y && y <= button.y + button.h);
 }
 
-void update_button_hover(SDL_Rect buyButton, SDL_Rect sellButton, bool* isBuyHovered, bool* isSellHovered) {
-    *isBuyHovered = is_mouse_over(buyButton);
-    *isSellHovered = is_mouse_over(sellButton);
+void update_button_hover(SDL_Rect sortAlphaButton, SDL_Rect sortCountButton, bool* isSortAlphaHovered, bool* isSortCountHovered) {
+    *isSortAlphaHovered = is_mouse_over(sortAlphaButton);
+    *isSortCountHovered = is_mouse_over(sortCountButton);
 }
 
 typedef struct type_of_object {
@@ -286,8 +286,8 @@ int main(int argc, char* argv[]) {
         handle_error("Error loading font", font, renderer, window);
     }
 
-    bool isBuyHovered = false;
-    bool isSellHovered = false;
+    bool isSortAlphaHovered = false;
+    bool isSortCountHovered = false;
 
     box boxes[6];
     for(int i = 0; i < 6; i++) {
@@ -308,9 +308,8 @@ int main(int argc, char* argv[]) {
         box_rects[i].y = (i / 3) * (BOX_HEIGHT + MARGIN) + OFFSET_Y;
     }
 
-    SDL_Rect buyButton = {(3 * BOX_WIDTH) / 2 - BUTTON_WIDTH - BUTTON_MARGIN, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
-    SDL_Rect sellButton = {(3 * BOX_WIDTH) / 2 + BUTTON_MARGIN, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
-
+    SDL_Rect sortAlphaButton = {(3 * BOX_WIDTH) / 2 - BUTTON_WIDTH - BUTTON_MARGIN, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
+    SDL_Rect sortCountButton = {(3 * BOX_WIDTH) / 2 + BUTTON_MARGIN, WINDOW_HEIGHT * 2 / 3 + (WINDOW_HEIGHT / 3 - BUTTON_HEIGHT) / 2, BUTTON_WIDTH, BUTTON_HEIGHT};
 //LES TESTS ICI
     add_object(&boxes[2], &APPLE);
     add_object(&boxes[2], &APPLE);
@@ -350,7 +349,7 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        update_button_hover(buyButton, sellButton, &isBuyHovered, &isSellHovered);
+        update_button_hover(sortAlphaButton, sortCountButton, &isSortAlphaHovered, &isSortCountHovered);
 
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
@@ -360,11 +359,12 @@ int main(int argc, char* argv[]) {
 
         render_boxes(renderer, box_rects, colors, BORDER_THICKNESS);
 
-        render_button_background(renderer, buyButton, isBuyHovered ? darkGray : gray);
-        render_button(renderer, font, "BUY", buyButton, isBuyHovered ? darkGray : gray);
+        render_button_background(renderer, sortAlphaButton, isSortAlphaHovered ? darkGray : gray);
+        render_button(renderer, font, "SORT ALPHA", sortAlphaButton, isSortAlphaHovered ? darkGray : gray);
 
-        render_button_background(renderer, sellButton, isSellHovered ? darkGray : gray);
-        render_button(renderer, font, "SELL", sellButton, isSellHovered ? darkGray : gray);
+        render_button_background(renderer, sortCountButton, isSortCountHovered ? darkGray : gray);
+        render_button(renderer, font, "SORT COUNT", sortCountButton, isSortCountHovered ? darkGray : gray);
+
 
         render_objects_in_boxes(renderer, boxes, box_rects);
 
